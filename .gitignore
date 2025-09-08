@@ -33,3 +33,7 @@ build/
 .vscode/
 
 .env.*
+backend/target/
+backend/build/
+!backend/src/
+!backend/src/**
