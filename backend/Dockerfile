@@ -17,4 +17,4 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 
-CMD ["java","-jar","app.jar"]
+CMD ["/bin/sh","-c","/usr/local/openjdk-21/bin/java -jar app.jar"]
