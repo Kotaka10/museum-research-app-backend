@@ -18,7 +18,6 @@ WORKDIR /app
 # ビルドステージから jar をコピー
 COPY --from=build /app/target/*.jar app.jar
 
-# Render の PORT 環境変数に対応
-ENV SERVER_PORT=${PORT:-8080}
-
-CMD ["java", "-jar", "app.jar", "--server.port=${PORT:-8080}"]
+# Render/Railway が割り当てる PORT 環境変数を使う
+EXPOSE 8080
+CMD java -jar app.jar --server.port=$PORT
