@@ -10,10 +10,10 @@
 		<!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example.museumsearch</groupId>
-	<artifactId>demo</artifactId>
+	<artifactId>museumsearch</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>demo</name>
-	<description>Demo project for Spring Boot</description>
+	<name>museumsearch</name>
+	<description>Museumsearch project for Spring Boot</description>
 	<url/>
 	<licenses>
 		<license/>

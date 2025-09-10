@@ -37,3 +37,4 @@ backend/target/
 backend/build/
 !backend/src/
 !backend/src/**
+!backend/Dockerfile
