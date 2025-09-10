@@ -32,7 +32,12 @@ public class JwtProvider {
 
     @PostConstruct
     protected void init() {
-        byte[] secretKeyBytes = Base64.getDecoder().decode(secretKey);
+        byte[] secretKeyBytes;
+        try {
+            secretKeyBytes = Base64.getDecoder().decode(secretKey);
+        } catch (IllegalArgumentException e) {
+            secretKeyBytes = secretKey.getBytes();
+        }
         this.key = Keys.hmacShaKeyFor(secretKeyBytes);
     }
 
