@@ -1,4 +1,5 @@
 FROM eclipse-temurin:21-jdk-jammy AS build
+ARG CACHE_BREAK=1
 WORKDIR /app
 COPY pom.xml .
 COPY mvnw .
@@ -8,7 +9,7 @@ RUN ./mvnw dependency:go-offline -B
 COPY src src
 RUN ./mvnw clean package -DskipTests
 
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:21-jdk-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 ENTRYPOINT ["java","-jar","app.jar"]
