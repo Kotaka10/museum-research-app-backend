@@ -22,4 +22,4 @@ RUN apt-get update && apt-get install -y openjdk-21-jdk && rm -rf /var/lib/apt/l
 
 COPY --from=build /app/target/*.jar app.jar
 
-CMD ["sh", "-c", "java -jar app.jar"]
+CMD ["/usr/bin/java", "-jar", "app.jar"]
