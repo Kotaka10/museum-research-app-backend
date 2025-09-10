@@ -12,4 +12,4 @@ RUN ./mvnw clean package -DskipTests
 FROM eclipse-temurin:21-jdk-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
-ENTRYPOINT ["java","-jar","app.jar"]
+CMD ["sh", "-c", "java -jar app.jar"]
