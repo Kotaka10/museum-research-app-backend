@@ -1,6 +1,7 @@
 package com.example.museumsearch.security;
 
 import java.security.Key;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -37,6 +38,9 @@ public class JwtProvider {
             secretKeyBytes = Base64.getDecoder().decode(secretKey);
         } catch (IllegalArgumentException e) {
             secretKeyBytes = secretKey.getBytes();
+        }
+        if (secretKeyBytes.length < 32) {
+            secretKeyBytes = Arrays.copyOf(secretKeyBytes, 32);
         }
         this.key = Keys.hmacShaKeyFor(secretKeyBytes);
     }
