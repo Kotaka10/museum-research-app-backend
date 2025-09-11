@@ -38,3 +38,4 @@ backend/build/
 !backend/src/
 !backend/src/**
 !backend/Dockerfile
+museums.backup.sql
