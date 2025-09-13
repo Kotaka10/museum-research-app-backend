@@ -16,7 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://museum-search-app-frontend.vercel.app") //本番環境(例: https:yourdomain.com)
+                        .allowedOrigins("https://museum-search-app-frontend.vercel.app")
                         .allowedMethods("*")
                         .allowedHeaders("*")
                         .allowCredentials(true);

@@ -49,8 +49,15 @@ public class MuseumController {
 
     @GetMapping("/all")
     public ResponseEntity<List<MuseumDTO>> getAllMuseums() {
-        List<Museum> museums = museumService.findAllMuseums();
-        return ResponseEntity.ok(museums.stream().map(museumMapper::toDTO).toList());
+        List<MuseumDTO> museumDTOs = museumService.findAllMuseums()
+                .stream()
+                .map(museumMapper::toDTO)
+                .toList();
+
+        return ResponseEntity.ok()
+                .header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                .header("Pragma", "no-cache")
+                .body(museumDTOs);
     }
 
     @GetMapping("/results")
