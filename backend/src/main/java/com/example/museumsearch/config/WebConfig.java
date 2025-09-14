@@ -17,7 +17,8 @@ public class WebConfig implements WebMvcConfigurer {
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins("https://museum-search-app-frontend.vercel.app")
-                        .allowedOrigins("https://museum-search-app-frontend-one.vercel.app/")
+                        .allowedOrigins("https://museum-search-app-frontend-one.vercel.app")
+                        .allowedOrigins("https://museum-search-app-taupe.vercel.app")
                         .allowedMethods("*")
                         .allowedHeaders("*")
                         .allowCredentials(true);
