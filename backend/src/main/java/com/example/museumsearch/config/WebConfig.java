@@ -20,6 +20,7 @@ public class WebConfig implements WebMvcConfigurer {
                         .allowedOrigins("https://museum-search-app-frontend-one.vercel.app")
                         .allowedOrigins("https://museum-search-app-taupe.vercel.app")
                         .allowedOrigins("https://museum-search-project.vercel.app/")
+                        .allowedOrigins("https://museum-search-seven.vercel.app/")
                         .allowedMethods("*")
                         .allowedHeaders("*")
                         .allowCredentials(true);
