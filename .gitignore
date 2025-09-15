@@ -39,3 +39,4 @@ backend/build/
 !backend/src/**
 !backend/Dockerfile
 museums.backup.sql
+!backend/render.yaml

@@ -1,0 +1,10 @@
+ervices:
+  - type: web
+    name: museum-backend
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/museum-search-app.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
