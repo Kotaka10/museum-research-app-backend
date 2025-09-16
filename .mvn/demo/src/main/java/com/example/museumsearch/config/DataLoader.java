@@ -59,7 +59,9 @@ public class DataLoader {
     @PostConstruct
     public void loadMuseumData() {
 
-        museumRepository.deleteAll();
+        if (museumRepository.count() > 0) {
+            return;
+        }
 
         InputStream inputStream = getClass().getResourceAsStream("/data/museums.csv");
 
@@ -115,6 +117,63 @@ public class DataLoader {
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("CSV読み込み失敗" + e.getMessage(), e);
+        }
+    }
+
+    @PostConstruct
+    public void addMuseumsFromCsv() {
+        InputStream inputStream = getClass().getResourceAsStream("/data/museums.csv");
+
+        if (inputStream == null) {
+            throw new IllegalArgumentException("CSVファイルが見つかりません: /data/museums.csv");
+        }
+
+        try (CSVReader csvReader = new CSVReaderBuilder(
+                new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+            .withCSVParser(new CSVParserBuilder()
+                .withSeparator(',')
+                .withQuoteChar('"')
+                .withEscapeChar('\\')
+                .build())
+            .build()) {
+
+            String[] fields;
+            boolean isFirstLine = true;
+
+            while ((fields = csvReader.readNext()) != null) {
+                if (isFirstLine) { isFirstLine = false; continue; }
+
+                if (museumRepository.existsByName(fields[0])) continue;
+
+                Museum museum = Museum.builder()
+                    .name(fields[0])
+                    .address(fields[1])
+                    .prefecture(fields[2])
+                    .phoneNumber(fields[3])
+                    .exhibition(fields[4])
+                    .imageProvider(fields[5])
+                    .exhibitionImage(fields[6])
+                    .museumUrl(fields[7])
+                    .exhibitionUrl(fields[8])
+                    .startDate(parseLocalDateSafely(fields[9]))
+                    .endDate(parseLocalDateSafely(fields[10]))
+                    .description(normalizeNewLine(fields[11]))
+                    .openingHours(normalizeNewLine(fields[12]))
+                    .closingDays(normalizeNewLine(fields[13]))
+                    .admissionFee(normalizeNewLine(fields[14]))
+                    .access(normalizeNewLine(fields[15]))
+                    .latitude(parseDoubleSafely(fields[16]))
+                    .longitude(parseDoubleSafely(fields[17]))
+                    .category(fields[18])
+                    .build();
+
+                museum.updateStatus(MuseumStatus.APPROVED);
+                museumRepository.save(museum);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("CSV読み込み失敗: " + e.getMessage(), e);
         }
     }
 }
