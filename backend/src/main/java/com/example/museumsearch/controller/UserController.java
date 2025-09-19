@@ -77,8 +77,8 @@ public class UserController {
             UserDTO userDTO = new UserDTO(user.getId(), user.getDisplayName());
 
             ResponseCookie cookie = ResponseCookie.from("token", token)
-                .httpOnly(false) //本番時trueに設定
-                //.secure(true) 本番環境時使用
+                .httpOnly(true)
+                .secure(true)
                 .path("/")
                 .sameSite("Lax")
                 .maxAge(86400)
@@ -105,10 +105,10 @@ public class UserController {
             String token = jwtProvider.generateToken(user.getEmail(), List.of("ROLE_" + user.getRoles()));
 
             ResponseCookie cookie = ResponseCookie.from("token", token)
-                .httpOnly(false) //本番ならtrue
-                .secure(false) //本番ならtrue
+                .httpOnly(true)
+                .secure(true) 
                 .path("/")
-                .sameSite("Lax")
+                .sameSite("None")
                 .maxAge(86400)
                 .build();
 
