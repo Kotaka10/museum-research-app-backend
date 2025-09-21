@@ -197,8 +197,8 @@ public class UserController {
     }
 
     @GetMapping("/display-name")
-    public ResponseEntity<String> getDsiplayName(@AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
-        String userName = user.getUsername();
+    public ResponseEntity<String> getDsiplayName(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        String userName = principal.getUsername();
         User currentUser = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりません"));
         String displayName = currentUser.getUserName();

@@ -34,8 +34,8 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Size(max = 50, message = "表示名は50文字以内で入力してください")
-    @Column(length = 50, name = "display_name")
+    @Size(max = 50, message = "ユーザー名は50文字以内で入力してください")
+    @Column(length = 50, name = "user_name")
     private String userName;
 
     @Column(name = "profile_image_url")
