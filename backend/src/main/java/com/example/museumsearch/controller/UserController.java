@@ -31,7 +31,6 @@ import com.example.museumsearch.dto.ViewedMuseumRequest;
 import com.example.museumsearch.dto.ViewedMuseumResponse;
 import com.example.museumsearch.model.User;
 import com.example.museumsearch.repository.UserRepository;
-import com.example.museumsearch.security.JwtProvider;
 import com.example.museumsearch.service.UserService;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -50,7 +49,6 @@ public class UserController {
     
     private final UserRepository userRepository;
     private final UserService userService;
-    private final JwtProvider jwtProvider;
 
     public static class RegisterRequest {
         @Email(message = "有効なメールアドレスを入力してください")
@@ -86,9 +84,7 @@ public class UserController {
             userService.registerUser(request.email, request.password, request.userName);
 
             String token = userService.login(request.email, request.password);
-
             User user = userService.findUserByEmail(request.email);
-            UserDTO userDTO = new UserDTO(user.getId(), user.getUserName());
 
             ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)
@@ -100,7 +96,7 @@ public class UserController {
 
             return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new LoginResponse(token, userDTO));
+                .body(new LoginResponse(token, new UserDTO(user.getId(), user.getUserName())));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("登録エラー: " + e.getMessage());
         }
@@ -128,7 +124,6 @@ public class UserController {
             return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new LoginResponse(token, new UserDTO(user.getId(), user.getUserName())));
-
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("ログイン失敗:" + e.getMessage()); 
         }
