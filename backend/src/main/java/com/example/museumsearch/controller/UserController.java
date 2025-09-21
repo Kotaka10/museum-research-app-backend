@@ -68,11 +68,11 @@ public class UserController {
     }
 
     public static class LoginRequest {
-        private String loginId;
+        private String email;
         private String password;
 
-        public String getLoginId() {
-            return loginId;
+        public String getEmail() {
+            return email;
         }
         public String getPassword() {
             return password;
@@ -108,7 +108,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            String loginId = request.getLoginId();
+            String loginId = request.getEmail();
             String password = request.getPassword();
 
             User user = userRepository.findByEmail(loginId)

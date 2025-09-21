@@ -22,10 +22,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String userNameOrEmail) throws UsernameNotFoundException {
-        User user = userRepository.findByUserName(userNameOrEmail)
-                .or(() -> userRepository.findByEmail(userNameOrEmail))
-                .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりません: " + userNameOrEmail));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByUserName(email)
+                .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりません: " + email));
 
         Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRoles()));
 
