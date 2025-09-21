@@ -7,6 +7,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import com.example.museumsearch.dto.ChangePasswordRequest;
 import com.example.museumsearch.dto.LoginResponse;
@@ -31,6 +32,7 @@ import com.example.museumsearch.dto.ViewedMuseumRequest;
 import com.example.museumsearch.dto.ViewedMuseumResponse;
 import com.example.museumsearch.model.User;
 import com.example.museumsearch.repository.UserRepository;
+import com.example.museumsearch.security.JwtProvider;
 import com.example.museumsearch.service.UserService;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,8 +49,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserController {
     
+    private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final JwtProvider jwtProvider;
 
     public static class RegisterRequest {
         @Email(message = "有効なメールアドレスを入力してください")
@@ -59,23 +63,8 @@ public class UserController {
         @Size(min = 6, message = "パスワードは6文字以上で入力してください")
         public String password;
 
-        @NotBlank(message = "ユーザー名は必須です")
+        @NotBlank(message = "表示名は必須です")
         public String userName;
-    }
-
-    public static class LoginRequest {
-        private String userName;
-        private String password;
-
-        public LoginRequest() {}
-
-        public String getUserName() {
-            return userName;
-        }
-
-        public String getPassword() {
-            return password;
-        }
     }
 
     @PostMapping("/register")
@@ -84,7 +73,9 @@ public class UserController {
             userService.registerUser(request.email, request.password, request.userName);
 
             String token = userService.login(request.email, request.password);
+
             User user = userService.findUserByEmail(request.email);
+            UserDTO userDTO = new UserDTO(user.getId(), user.getUserName());
 
             ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)
@@ -96,22 +87,23 @@ public class UserController {
 
             return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new LoginResponse(token, new UserDTO(user.getId(), user.getUserName())));
+                .body(new LoginResponse(token, userDTO));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("登録エラー: " + e.getMessage());
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
         try {
-            String userName = request.getUserName();
-            String password = request.getPassword();
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password)
+            );
 
-            User user = userRepository.findByUserName(userName)
+            User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりませんでした"));
 
-            String token = userService.login(userName, password);
+            String token = jwtProvider.generateToken(user.getUserName(), List.of("ROLE_" + user.getRoles()));
 
             ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)
@@ -124,6 +116,7 @@ public class UserController {
             return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new LoginResponse(token, new UserDTO(user.getId(), user.getUserName())));
+
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("ログイン失敗:" + e.getMessage()); 
         }
@@ -143,21 +136,21 @@ public class UserController {
     }
 
     @GetMapping("/mypage")
-    public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
-        if (principal == null) {
+    public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String userName = principal.getUsername();
-        User user = userService.findUserByUserName(userName);
-        return ResponseEntity.ok(user);
+        String email = user.getUsername();
+        User me = userService.findUserByEmail(email);
+        return ResponseEntity.ok(me);
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
-        log.info("認証ユーザー: {}", principal);
-        String userName = principal.getUsername();
-        userService.deleteUserByUserName(userName);
+    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
+        log.info("認証ユーザー: {}", user);
+        String email = user.getUsername();
+        userService.deleteUserByEmail(email);
         return ResponseEntity.ok().build();
     }
 
@@ -192,20 +185,17 @@ public class UserController {
     @PostMapping("/change-password")
     public ResponseEntity<Void> changePassword(
         @RequestBody ChangePasswordRequest request,
-        @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
         
-        String userName = principal.getUsername();
-        User user = userRepository.findByUserName(userName)
-            .orElseThrow(() -> new NoSuchElementException("ユーザーが見つかりません: " + userName));
-        String email = user.getEmail();
+        String email = user.getUsername();
         userService.changePassword(email, request.getOldPassword(), request.getNewPassword());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/display-name")
-    public ResponseEntity<String> getDsiplayName(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
-        String userName = principal.getUsername();
-        User currentUser = userRepository.findByUserName(userName)
+    public ResponseEntity<String> getDsiplayName(@AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
+        String email = user.getUsername();
+        User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりません"));
         String displayName = currentUser.getUserName();
         return ResponseEntity.ok(displayName);
@@ -213,36 +203,26 @@ public class UserController {
 
     @PutMapping("/display-name")
     public ResponseEntity<?> updateDisplayName(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User user,
             @RequestBody Map<String, String> request
     ) {
-        String userName = principal.getUsername();
-        User user = userRepository.findByUserName(userName)
-            .orElseThrow(() -> new NoSuchElementException("ユーザーが見つかりません: " + userName));
-        String email = user.getEmail();
+        String email = user.getUsername();
         String newName = request.get("displayName");
         userService.updateDisplayName(email, newName);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/email")
-    public ResponseEntity<String> getEmail(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
-        String userName = principal.getUsername();
-        User user = userRepository.findByUserName(userName)
-            .orElseThrow(() -> new NoSuchElementException("ユーザーが見つかりません: " + userName));
-        String email = user.getEmail();
-        return ResponseEntity.ok(email);
+    public ResponseEntity<String> getEmail(@AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
+        return ResponseEntity.ok(user.getUsername());
     }
 
     @PutMapping("/email")
     public ResponseEntity<?> updateEmail(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User user,
             @RequestBody Map<String, String> request
     ) {
-        String userName = principal.getUsername();
-        User user = userRepository.findByUserName(userName)
-            .orElseThrow(() -> new NoSuchElementException("ユーザーが見つかりません: " + userName));
-        String currentEmail = user.getEmail();
+        String currentEmail = user.getUsername();
         String newEmail = request.get("email");
 
         if (userService.existsUserByEmail(newEmail)) {
@@ -255,12 +235,9 @@ public class UserController {
 
     @GetMapping("/viewed")
     public ResponseEntity<List<ViewedMuseumResponse>> getViewedMuseums(
-        @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
         
-        String userName = principal.getUsername();
-        User user = userRepository.findByUserName(userName)
-            .orElseThrow(() -> new NoSuchElementException("ユーザーが見つかりません: " + userName));
-        String email = user.getEmail();
+        String email = user.getUsername();
         List<ViewedMuseumResponse> history = userService.getViewedMuseums(email);
         return ResponseEntity.ok(history);
     }
@@ -268,12 +245,9 @@ public class UserController {
     @PostMapping("/viewed")
     public ResponseEntity<?> saveViewedMuseum(
         @RequestBody ViewedMuseumRequest request,
-        @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
         
-        String userName = principal.getUsername();
-        User user = userRepository.findByUserName(userName)
-            .orElseThrow(() -> new NoSuchElementException("ユーザーが見つかりません: " + userName));
-        String email = user.getEmail();
+        String email = user.getUsername();
         userService.saveViewedMuseum(email, request.getMuseumId());
         return ResponseEntity.ok().build();
     }
@@ -281,12 +255,10 @@ public class UserController {
     @PostMapping("/profile-image")
     public ResponseEntity<?> uploadProfileImage(
         @RequestPart("image") MultipartFile image,
-        @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
 
-        String userName = principal.getUsername();
-        User user = userRepository.findByUserName(userName)
-            .orElseThrow(() -> new NoSuchElementException("ユーザーが見つかりません: " + userName));
-        String email = user.getEmail();
+
+        String email = user.getUsername();
         log.info("プロフィール画像アップロードリクエスト: email={}", email); 
         String imageUrl = userService.uploadProfileImage(email, image);
         return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
