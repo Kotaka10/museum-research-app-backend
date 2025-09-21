@@ -103,6 +103,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void deleteUserByUserName(String userName) {
+        User user = userRepository.findByUserName(userName)
+            .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりません"));
+        log.info("ユーザーを削除します: userName={}", userName);
+        userRepository.delete(user);
+    }
+
+    @Override
     public User findUserById(Long id) {
         return userRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("指定されたIDのユーザーが見つかりません" + id));
@@ -112,6 +120,12 @@ public class UserServiceImpl implements UserService {
     public User findUserByEmail(String email) {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new NoSuchElementException("ユーザーが見つかりません: " + email));
+    }
+
+    @Override
+    public User findUserByUserName(String userName) {
+        return userRepository.findByUserName(userName)
+            .orElseThrow(() -> new NoSuchElementException("ユーザーが見つかりません: " + userName));
     }
 
     @Override

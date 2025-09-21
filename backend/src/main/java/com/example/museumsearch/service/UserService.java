@@ -16,8 +16,10 @@ public interface UserService {
     void updateEmail(String currentEmail, String newEmail);
     void deleteUserById(Long id);
     void deleteUserByEmail(String email);
+    void deleteUserByUserName(String userNmae);
     User findUserById(Long id);
     User findUserByEmail(String email);
+    User findUserByUserName(String userNmae);
     boolean existsUserByEmail(String email);
     String login(String userNameOrEmail, String password);
     User getCurrentUser(String token);
