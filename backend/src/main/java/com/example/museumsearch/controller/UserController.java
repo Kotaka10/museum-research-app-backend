@@ -94,13 +94,13 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
+    public ResponseEntity<?> login(@RequestParam String userName, @RequestParam String password) {
         try {
             authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password)
+                new UsernamePasswordAuthenticationToken(userName, password)
             );
 
-            User user = userRepository.findByEmail(email)
+            User user = userRepository.findByUserName(userName)
                     .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりませんでした"));
 
             String token = jwtProvider.generateToken(user.getUserName(), List.of("ROLE_" + user.getRoles()));
