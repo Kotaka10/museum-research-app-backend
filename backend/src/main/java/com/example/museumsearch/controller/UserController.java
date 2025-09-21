@@ -7,10 +7,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserController {
     
-    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final UserService userService;
     private final JwtProvider jwtProvider;
@@ -65,6 +65,18 @@ public class UserController {
 
         @NotBlank(message = "表示名は必須です")
         public String userName;
+    }
+
+    public static class LoginRequest {
+        private String loginId;
+        private String password;
+
+        public String getLoginId() {
+            return loginId;
+        }
+        public String getPassword() {
+            return password;
+        }
     }
 
     @PostMapping("/register")
@@ -94,14 +106,18 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password)
-            );
+            String loginId = request.getLoginId();
+            String password = request.getPassword();
 
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりませんでした"));
+            User user = userRepository.findByEmail(loginId)
+                .or(() -> userRepository.findByUserName(loginId))
+                .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりませんでした"));
+
+            if (!passwordEncoder.matches(password, user.getPassword())) {
+                throw new BadCredentialsException("パスワードが違います");
+            }
 
             String token = jwtProvider.generateToken(user.getUserName(), List.of("ROLE_" + user.getRoles()));
 
