@@ -7,8 +7,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,7 +48,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserController {
     
-    private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final UserService userService;
     private final JwtProvider jwtProvider;
@@ -66,6 +63,21 @@ public class UserController {
 
         @NotBlank(message = "表示名は必須です")
         public String userName;
+    }
+
+    public static class LoginRequest {
+        private String userName;
+        private String password;
+
+        public LoginRequest() {}
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public String getPassword() {
+            return password;
+        }
     }
 
     @PostMapping("/register")
@@ -95,11 +107,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String userName, @RequestParam String password) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userName, password)
-            );
+            String userName = request.getUserName();
 
             User user = userRepository.findByUserName(userName)
                     .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりませんでした"));
