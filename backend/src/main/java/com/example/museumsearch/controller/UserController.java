@@ -64,13 +64,13 @@ public class UserController {
         public String password;
 
         @NotBlank(message = "表示名は必須です")
-        public String displayName;
+        public String userName;
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
         try {
-            userService.registerUser(request.email, request.password, request.displayName);
+            userService.registerUser(request.email, request.password, request.userName);
 
             String token = userService.login(request.email, request.password);
 
@@ -103,7 +103,7 @@ public class UserController {
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりませんでした"));
 
-            String token = jwtProvider.generateToken(user.getEmail(), List.of("ROLE_" + user.getRoles()));
+            String token = jwtProvider.generateToken(user.getUserName(), List.of("ROLE_" + user.getRoles()));
 
             ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)
