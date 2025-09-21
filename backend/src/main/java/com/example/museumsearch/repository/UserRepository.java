@@ -14,7 +14,7 @@ import com.example.museumsearch.model.User;
 public interface UserRepository extends JpaRepository<User, Long>{
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
-    Optional<User> findByDisplayName(String displayName);
+    Optional<User> findByUserName(String displayName);
 
     @Query("SELECT u FROM User u WHERE u.email LIKE %:keyword% OR u.displayName LIKE %:keyword%")
     Page<User> searchByKeyword(String keyword, Pageable pageable);
