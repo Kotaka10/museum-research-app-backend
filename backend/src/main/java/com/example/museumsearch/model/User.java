@@ -36,7 +36,7 @@ public class User {
 
     @Size(max = 50, message = "表示名は50文字以内で入力してください")
     @Column(length = 50, name = "display_name")
-    private String displayName;
+    private String userName;
 
     @Column(name = "profile_image_url")
     private String profileImageUrl;
@@ -54,7 +54,7 @@ public class User {
     }
 
     public void updateDisplayName(String displayName) {
-        this.displayName = displayName;
+        this.userName = displayName;
     }
 
     public void updateProfileImageUrl(String profileImageUrl) {

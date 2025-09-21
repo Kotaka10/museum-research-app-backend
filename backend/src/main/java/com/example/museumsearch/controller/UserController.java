@@ -75,7 +75,7 @@ public class UserController {
             String token = userService.login(request.email, request.password);
 
             User user = userService.findUserByEmail(request.email);
-            UserDTO userDTO = new UserDTO(user.getId(), user.getDisplayName());
+            UserDTO userDTO = new UserDTO(user.getId(), user.getUserName());
 
             ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)
@@ -115,7 +115,7 @@ public class UserController {
 
             return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new LoginResponse(token, new UserDTO(user.getId(), user.getDisplayName())));
+                .body(new LoginResponse(token, new UserDTO(user.getId(), user.getUserName())));
 
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("ログイン失敗:" + e.getMessage()); 
@@ -197,7 +197,7 @@ public class UserController {
         String email = user.getUsername();
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりません"));
-        String displayName = currentUser.getDisplayName();
+        String displayName = currentUser.getUserName();
         return ResponseEntity.ok(displayName);
     }
 

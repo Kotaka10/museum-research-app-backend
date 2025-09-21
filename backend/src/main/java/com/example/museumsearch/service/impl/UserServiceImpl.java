@@ -61,8 +61,8 @@ public class UserServiceImpl implements UserService {
     public User editUser(Long id, User updateUser) {
         User existingUser = findUserById(id);
 
-        if (updateUser.getDisplayName() != null) {
-            existingUser.updateDisplayName(updateUser.getDisplayName());
+        if (updateUser.getUserName() != null) {
+            existingUser.updateDisplayName(updateUser.getUserName());
         }
         log.info("ユーザー情報を更新します: {}", id);
         return userRepository.save(existingUser);
@@ -229,7 +229,7 @@ public class UserServiceImpl implements UserService {
     public List<User> searchUsers(String keyword) {
         return userRepository.findAll().stream()
             .filter(user -> user.getEmail().contains(keyword) || 
-                            (user.getDisplayName() != null && user.getDisplayName().contains(keyword)))
+                            (user.getUserName() != null && user.getUserName().contains(keyword)))
             .toList();
     }
 
