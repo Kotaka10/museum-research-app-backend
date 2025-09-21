@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new RuntimeException("パスワードが違います");
         }
-        return jwtProvider.generateToken(user.getEmail(), List.of("ROLE_" + user.getRoles()));
+        return jwtProvider.generateToken(user.getUserName(), List.of("ROLE_" + user.getRoles()));
     }
 
     @Override
