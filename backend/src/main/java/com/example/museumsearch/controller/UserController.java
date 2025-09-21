@@ -61,7 +61,7 @@ public class UserController {
         @Size(min = 6, message = "パスワードは6文字以上で入力してください")
         public String password;
 
-        @NotBlank(message = "表示名は必須です")
+        @NotBlank(message = "ユーザー名は必須です")
         public String userName;
     }
 
@@ -110,11 +110,12 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             String userName = request.getUserName();
+            String password = request.getPassword();
 
             User user = userRepository.findByUserName(userName)
                     .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりませんでした"));
 
-            String token = jwtProvider.generateToken(user.getUserName(), List.of("ROLE_" + user.getRoles()));
+            String token = userService.login(userName, password);
 
             ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)
