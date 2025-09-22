@@ -119,7 +119,7 @@ public class UserController {
                 throw new BadCredentialsException("パスワードが違います");
             }
 
-            String token = jwtProvider.generateToken(user.getUserName(), List.of("ROLE_" + user.getRoles()));
+            String token = jwtProvider.generateToken(user.getEmail(), List.of("ROLE_" + user.getRoles()));
 
             ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)

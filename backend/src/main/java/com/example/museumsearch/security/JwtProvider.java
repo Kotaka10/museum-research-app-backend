@@ -45,12 +45,12 @@ public class JwtProvider {
         this.key = Keys.hmacShaKeyFor(secretKeyBytes);
     }
 
-    public String generateToken(String userNameOrEmail, List<String> roles) {
+    public String generateToken(String email, List<String> roles) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
-            .setSubject(userNameOrEmail)
+            .setSubject(email)
             .claim("roles", roles)
             .setIssuedAt(now)
             .setExpiration(expiry)
