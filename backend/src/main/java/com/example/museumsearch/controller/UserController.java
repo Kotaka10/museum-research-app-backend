@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -233,7 +234,7 @@ public class UserController {
             @RequestBody Map<String, String> request
     ) {
         String email = user.getUsername();
-        String newName = request.get("displayName");
+        String newName = request.get("userName");
         userService.updateDisplayName(email, newName);
         return ResponseEntity.ok().build();
     }
@@ -288,17 +289,6 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/profile-image")
-    public ResponseEntity<?> uploadProfileImage(
-        @RequestPart("image") MultipartFile image,
-        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) 
-    {
-        String email = user.getUsername();
-        log.info("プロフィール画像アップロードリクエスト: email={}", email); 
-        String imageUrl = userService.uploadProfileImage(email, image);
-        return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
-    }
-
     @GetMapping("/{id}/profile-image")
     public ResponseEntity<?> getProfileImage(@PathVariable Long id) {
         String imageUrl = userService.getProfileImageUrl(id);
@@ -306,6 +296,17 @@ public class UserController {
             return ResponseEntity.ok(Map.of("imageUrl", ""));
         }
         
+        return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
+    }
+
+    @PostMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadProfileImage(
+        @RequestPart("image") MultipartFile image,
+        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) 
+    {
+        String email = user.getUsername();
+        log.info("プロフィール画像アップロードリクエスト: email={}", email); 
+        String imageUrl = userService.uploadProfileImage(email, image);
         return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
     }
 }
