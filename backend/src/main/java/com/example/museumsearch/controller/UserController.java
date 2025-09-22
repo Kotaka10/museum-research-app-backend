@@ -167,7 +167,17 @@ public class UserController {
         log.info("認証ユーザー: {}", user);
         String email = user.getUsername();
         userService.deleteUserByEmail(email);
-        return ResponseEntity.ok().build();
+            ResponseCookie deleteCookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .sameSite("None")
+                .maxAge(0)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .build();
     }
 
     @PutMapping("/{id}")
@@ -246,13 +256,23 @@ public class UserController {
         }
 
         userService.updateEmail(currentEmail, newEmail);
-        return ResponseEntity.ok().build();
+        ResponseCookie deleteCookie = ResponseCookie.from("token", "")
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .sameSite("None")
+            .maxAge(0)
+            .build();
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+            .build();
     }
 
     @GetMapping("/viewed")
     public ResponseEntity<List<ViewedMuseumResponse>> getViewedMuseums(
-        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
-        
+        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user)
+    {
         String email = user.getUsername();
         List<ViewedMuseumResponse> history = userService.getViewedMuseums(email);
         return ResponseEntity.ok(history);
@@ -261,8 +281,8 @@ public class UserController {
     @PostMapping("/viewed")
     public ResponseEntity<?> saveViewedMuseum(
         @RequestBody ViewedMuseumRequest request,
-        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
-        
+        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) 
+    {
         String email = user.getUsername();
         userService.saveViewedMuseum(email, request.getMuseumId());
         return ResponseEntity.ok().build();
@@ -271,9 +291,8 @@ public class UserController {
     @PostMapping("/profile-image")
     public ResponseEntity<?> uploadProfileImage(
         @RequestPart("image") MultipartFile image,
-        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
-
-
+        @AuthenticationPrincipal org.springframework.security.core.userdetails.User user) 
+    {
         String email = user.getUsername();
         log.info("プロフィール画像アップロードリクエスト: email={}", email); 
         String imageUrl = userService.uploadProfileImage(email, image);
