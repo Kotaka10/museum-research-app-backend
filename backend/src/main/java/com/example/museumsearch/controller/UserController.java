@@ -113,7 +113,6 @@ public class UserController {
             String password = request.getPassword();
 
             User user = userRepository.findByEmail(loginId)
-                .or(() -> userRepository.findByUserName(loginId))
                 .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりませんでした"));
 
             if (!passwordEncoder.matches(password, user.getPassword())) {
