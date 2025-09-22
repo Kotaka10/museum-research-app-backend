@@ -109,10 +109,10 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            String loginId = request.getEmail();
+            String email = request.getEmail();
             String password = request.getPassword();
 
-            User user = userRepository.findByEmail(loginId)
+            User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりませんでした"));
 
             if (!passwordEncoder.matches(password, user.getPassword())) {
