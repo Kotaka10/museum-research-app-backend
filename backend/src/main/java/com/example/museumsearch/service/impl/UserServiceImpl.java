@@ -134,14 +134,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String login(String userNameOrEmail, String rawPassword) {
-        User user = userRepository.findByEmail(userNameOrEmail)
-            .or(() -> userRepository.findByUserName(userNameOrEmail))
+    public String login(String email, String rawPassword) {
+        User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("ユーザーが見つかりません"));
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new RuntimeException("パスワードが違います");
         }
-        return jwtProvider.generateToken(user.getUserName(), List.of("ROLE_" + user.getRoles()));
+        return jwtProvider.generateToken(user.getEmail(), List.of("ROLE_" + user.getRoles()));
     }
 
     @Override
