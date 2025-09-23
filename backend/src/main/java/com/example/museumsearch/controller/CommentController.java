@@ -101,10 +101,10 @@ public class CommentController {
 
     @GetMapping("/user")
     public ResponseEntity<List<CommentDTO>> getCommentsByUser(@AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
-        String username = user.getUsername();
-        log.info("ユーザー {} のコメントを取得します", username);
+        String email = user.getUsername();
+        log.info("ユーザー {} のコメントを取得します", email);
 
-        List<Comment> comments = commentService.getCommentsByUsername(username);
+        List<Comment> comments = commentService.getCommentsByUsername(email);
         List<CommentDTO> dtoList = comments.stream()
             .map(commentMapper::toDTO)
             .toList();
