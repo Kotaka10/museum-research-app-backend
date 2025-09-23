@@ -114,8 +114,8 @@ public class MuseumController {
         @RequestBody MuseumDTO dto,
         @AuthenticationPrincipal org.springframework.security.core.userdetails.User user
     ) {
-        String userName = user.getUsername();
-        User managedUser = userRepository.findByUserName(userName)
+        String email = user.getUsername();
+        User managedUser = userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりません"));
 
         Museum museum = museumMapper.toEntity(dto);
@@ -151,8 +151,8 @@ public class MuseumController {
     public ResponseEntity<List<MuseumDTO>> getMyMuseums(
          @AuthenticationPrincipal org.springframework.security.core.userdetails.User user
     ) {
-        String userName = user.getUsername();
-        User managedUser = userRepository.findByUserName(userName)
+        String email = user.getUsername();
+        User managedUser = userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりません"));
 
         List<Museum> museums = museumRepository.findByCreatedByIsNotNullAndCreatedBy(managedUser);
