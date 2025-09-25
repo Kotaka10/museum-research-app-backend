@@ -80,6 +80,23 @@ public class UserController {
         }
     }
 
+    public class LoginResponse {
+        private String token;
+        private UserDTO user;
+
+        public LoginResponse(String token, UserDTO user) {
+            this.token = token;
+            this.user = user;
+        }
+
+        public String getToken() {
+            return token;
+        }
+        public UserDTO getUser() {
+            return user;
+        }
+    }
+
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
         try {
