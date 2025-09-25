@@ -90,17 +90,7 @@ public class UserController {
             User user = userService.findUserByEmail(request.email);
             UserDTO userDTO = new UserDTO(user.getId(), user.getUserName());
 
-            ResponseCookie cookie = ResponseCookie.from("token", token)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite("None")
-                .maxAge(86400)
-                .build();
-
-            return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new LoginResponse(token, userDTO));
+            return ResponseEntity.ok(new LoginResponse(token, userDTO));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("登録エラー: " + e.getMessage());
         }
@@ -121,17 +111,9 @@ public class UserController {
 
             String token = jwtProvider.generateToken(user.getEmail(), List.of("ROLE_" + user.getRoles()));
 
-            ResponseCookie cookie = ResponseCookie.from("token", token)
-                .httpOnly(true)
-                .secure(true) 
-                .path("/")
-                .sameSite("None")
-                .maxAge(86400)
-                .build();
-
-            return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new LoginResponse(token, new UserDTO(user.getId(), user.getUserName())));
+            return ResponseEntity.ok(
+            new LoginResponse(token, new UserDTO(user.getId(), user.getUserName()))
+        );
 
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("ログイン失敗:" + e.getMessage()); 
@@ -140,14 +122,6 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from("token", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite("None")
-                .maxAge(0)
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return ResponseEntity.ok().build();
     }
 
