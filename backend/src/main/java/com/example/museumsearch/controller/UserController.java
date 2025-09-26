@@ -136,11 +136,6 @@ public class UserController {
         }
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse response) {
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/mypage")
     public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
         if (user == null) {
