@@ -27,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 import com.example.museumsearch.dto.ChangePasswordRequest;
-import com.example.museumsearch.dto.LoginResponse;
 import com.example.museumsearch.dto.UserDTO;
 import com.example.museumsearch.dto.ViewedMuseumRequest;
 import com.example.museumsearch.dto.ViewedMuseumResponse;
@@ -80,7 +79,7 @@ public class UserController {
         }
     }
 
-    public class LoginResponse {
+    public static class LoginResponse {
         private String token;
         private UserDTO user;
 
