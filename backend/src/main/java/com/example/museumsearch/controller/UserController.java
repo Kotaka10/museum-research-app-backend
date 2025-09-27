@@ -35,7 +35,6 @@ import com.example.museumsearch.repository.UserRepository;
 import com.example.museumsearch.security.JwtProvider;
 import com.example.museumsearch.service.UserService;
 
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
