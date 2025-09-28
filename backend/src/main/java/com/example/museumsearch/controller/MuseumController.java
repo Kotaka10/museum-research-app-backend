@@ -134,7 +134,7 @@ public class MuseumController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Museum> updateMuseum(
         @PathVariable Long id,
         @RequestBody Museum updatedMuseum,
