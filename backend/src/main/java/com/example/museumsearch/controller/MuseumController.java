@@ -163,7 +163,7 @@ public class MuseumController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Void> deleteMuseum(@PathVariable Long id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         log.info("Authorities: {}", auth.getAuthorities());
