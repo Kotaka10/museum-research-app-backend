@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/museums/results", "/api/museums/results/").permitAll()
                 .requestMatchers("/api/users/mypage", "/api/users/change-password").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/museums/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers("/api/museums/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/profile-image").authenticated()
                 .anyRequest().authenticated()
@@ -64,7 +65,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of("https://museum-search-app-theta.vercel.app"));
         configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
