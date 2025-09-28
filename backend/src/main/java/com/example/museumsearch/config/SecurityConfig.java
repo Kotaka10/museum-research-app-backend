@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/museums/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.DELETE, "/api/comments/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers("/api/museums/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/profile-image").authenticated()
                 .anyRequest().authenticated()
