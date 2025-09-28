@@ -131,7 +131,15 @@ public class UserController {
         );
 
         } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("ログイン失敗:" + e.getMessage()); 
+            if (!userRepository.existsByEmail(request.getEmail())) {
+                return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("メールアドレスが間違っています");
+            } else {
+                return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("パスワードが間違っています");
+            }
         }
     }
 
